@@ -12,7 +12,7 @@ input_file = filedialog.askopenfilename(title="OCS発送依頼書を選択", fil
 if not input_file:
     raise ValueError("OCS発送依頼書が選択されていません。")
 
-template_file = filedialog.askopenfilename(title="テンプレートファイルを選択", filetypes=[("Excel files", "*.xlsx")])
+template_file = filedialog.askopenfilename(title="ドクターテンプレートファイルを選択", filetypes=[("Excel files", "*.xlsx")])
 if not template_file:
     raise ValueError("テンプレートファイルが選択されていません。")
 
@@ -23,7 +23,7 @@ match = re.search(r'(\d{6})', input_file)
 if not match:
     raise ValueError("ファイル名から日付（6桁）が抽出できません。")
 date_suffix = match.group(1)
-output_folder = f"OCS_invoice_{date_suffix}"
+output_folder = f"doctor_invoice_{date_suffix}"
 os.makedirs(output_folder, exist_ok=True)
 
 # ===== データ読み込み =====
@@ -53,17 +53,22 @@ def export_current_row():
     ws.page_setup.fitToHeight = 1
 
     invoice_name = f"INV_{date_suffix}_{current_index+1:03}"
-    ws["D3"] = invoice_name
+    ws["H2"] = invoice_name
 
-    ws["A7"] = str(row.get("Clinic Name", ""))
-    住所 = row.get("Address", "")
-    医師名 = row.get("Doctor's Name", "")
-    電話番号 = row.get("TEL", "")
-    value_a8 = f"{住所} {電話番号}\nDr.{医師名} +81 90 9302 0682"
-    ws["A8"] = value_a8
+    invoice_date = f"{date_suffix}"
+    ws["B20"] = invoice_date
 
+
+    ws["B9"] = str(row.get("郵便番号", ""))
+    ws["B10"] = str(row.get("住所", ""))
+    ws["B11"] = str(row.get("クリニック名", ""))
+    医師名 = row.get("発注医師名", "")
+    value_b11 = f"{医師名}   先生"
+    ws["B13"] = value_b11
+    
+    
     数量列名 = "SBC Eye Booster\n（発注単位：箱 ）\n1箱 20個"
-    ws["E18"] = str(row.get(数量列名, ""))
+    ws["F20"] = str(row.get(数量列名, ""))
 
     #if os.path.exists(signature_image):
     #    img = ExcelImage(signature_image)
